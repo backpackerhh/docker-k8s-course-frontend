@@ -13,6 +13,8 @@ RUN npm run build
 
 FROM nginx
 
+EXPOSE $PORT
+
 COPY nginx/default.conf.template /etc/nginx/conf.d/
 COPY --from=build /usr/app/build /usr/share/nginx/html
 COPY --from=build /usr/app/entrypoint.sh /usr/share/nginx/
