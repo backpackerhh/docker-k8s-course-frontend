@@ -1,0 +1,41 @@
+- pipeline: "Heroku Integration"
+  trigger_mode: "ON_EVERY_PUSH"
+  ref_name: "buddy-heroku"
+  ref_type: "BRANCH"
+  fetch_all_refs: true
+  trigger_condition: "ALWAYS"
+  actions:
+    - action: "Build Docker image for test"
+      type: "DOCKERFILE"
+      dockerfile_path: "Dockerfile.dev"
+      buildkit: true
+      trigger_condition: "ALWAYS"
+    - action: "Run: npm test"
+      type: "RUN_DOCKER_CONTAINER"
+      use_image_from_action: true
+      inline_commands: "npm test"
+      mount_filesystem_disable: true
+      trigger_condition: "ALWAYS"
+      shell: "SH"
+    - action: "Build Docker image for production"
+      type: "DOCKERFILE"
+      login: "_"
+      password: "secure!9wU1LQS6pWyiifyhDU2Ftc1FAZMH5eHQH4WJJ47Vin1i/H6b7QjnCoO+PMePyGTs.ngvnEy803uOhKBe3s6559Q=="
+      docker_image_tag: "latest"
+      dockerfile_path: "Dockerfile"
+      repository: "$HEROKU_APP_NAME/web"
+      registry: "registry.heroku.com"
+      buildkit: true
+      trigger_condition: "ALWAYS"
+    - action: "Execute: heroku container:release web --app $HEROKU_APP_NAME"
+      type: "HEROKU_CLI"
+      application_name: "$HEROKU_APP_NAME"
+      execute_commands:
+        - "heroku container:release web --app $HEROKU_APP_NAME"
+      trigger_condition: "ALWAYS"
+      integration_hash: "5e8b6522422f5a7e06510d28"
+  variables:
+    - key: "HEROKU_APP_NAME"
+      value: "docker-k8s-course-frontend"
+      id: 342241
+      description: ""
